@@ -1,0 +1,28 @@
+# wmsliver config
+#
+# Copy to ~/.config/wmsliver/config (or /etc/wmsliver.conf for all users).
+# Lines are "key = value". A '#' starts a comment only at the start of a line.
+# Colors, fonts and textures come from your Window Maker theme, not from here.
+
+# Picture shown above your name. Default: ~/.face, then ~/.face.icon.
+# Any format Imlib2 can read (PNG, JPEG, ...); it is cropped to a square.
+#avatar = ~/Pictures/me.png
+
+# Text in the panel's title bar.
+#title = Screen Locked
+
+# Dockapps to show while locked, left to right. One line per dockapp, with
+# arguments if needed. wmsliver starts its own copy of each one and stops it
+# on unlock; copies already in your dock are left alone. Up to 8.
+#dockapp = wmcpuload
+#dockapp = wmclock -12
+
+# Corner for the dockapps: bottom-left, bottom-right, top-left or top-right.
+#dock = bottom-left
+
+# Switch to power-profiles-daemon's power-saver profile while locked and
+# restore the previous profile on unlock. Needs power-profiles-daemon.
+#powersave = yes
+
+# Color of the "Wrong password" message (themes have no error color).
+#error_color = #e05050
