@@ -19,19 +19,27 @@ CFLAGS ?= -O2
 CFLAGS += -Wall -Wextra -std=c99 $(shell pkg-config --cflags $(PKGS))
 LDLIBS += $(shell pkg-config --libs $(PKGS)) -lpam
 
-wmsliver: wmsliver.c
+all: wmsliver wmsliver-logout
 
-install: wmsliver
+wmsliver: wmsliver.c common.c common.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ wmsliver.c common.c $(LDLIBS)
+
+wmsliver-logout: logout.c common.c common.h
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(LDFLAGS) -o $@ logout.c common.c $(LDLIBS)
+
+install: all
 	install -Dm755 wmsliver $(DESTDIR)$(PREFIX)/bin/wmsliver
+	install -Dm755 wmsliver-logout $(DESTDIR)$(PREFIX)/bin/wmsliver-logout
 	install -Dm644 wmsliver.pam $(DESTDIR)/etc/pam.d/wmsliver
 	install -Dm644 config.example $(DESTDIR)$(DOCDIR)/config.example
+	install -Dm644 logout.example $(DESTDIR)$(DOCDIR)/logout.example
 	install -Dm644 README.md $(DESTDIR)$(DOCDIR)/README.md
 
 uninstall:
-	rm -f $(DESTDIR)$(PREFIX)/bin/wmsliver $(DESTDIR)/etc/pam.d/wmsliver
+	rm -f $(DESTDIR)$(PREFIX)/bin/wmsliver $(DESTDIR)$(PREFIX)/bin/wmsliver-logout $(DESTDIR)/etc/pam.d/wmsliver
 	rm -rf $(DESTDIR)$(DOCDIR)
 
 clean:
-	rm -f wmsliver
+	rm -f wmsliver wmsliver-logout
 
-.PHONY: install uninstall clean
+.PHONY: all install uninstall clean

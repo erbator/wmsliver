@@ -1,0 +1,25 @@
+# wmsliver-logout config
+#
+# Copy to ~/.config/wmsliver/logout (or /etc/wmsliver-logout.conf for all users).
+# Each item runs its command through /bin/sh after the menu closes.
+# Set an item to nothing ("reboot =") to hide it.
+# Colors and fonts come from your Window Maker theme's menu settings.
+
+# Text in the menu's title bar.
+#title = Session
+
+# Where it pops up on the monitor with the pointer:
+# bottom-left, bottom-right, top-left, top-right or center.
+#position = bottom-left
+
+# Default: wmsliver from the same directory as wmsliver-logout, else from $PATH.
+#lock = wmsliver
+
+# Window Maker saves its state and exits on SIGTERM, which ends the session.
+#logout = pkill -TERM -n -x wmaker
+
+# Locks first, so the machine wakes up locked.
+#suspend = wmsliver & sleep 1; exec systemctl suspend
+
+#reboot = systemctl reboot
+#shutdown = systemctl poweroff

@@ -7,9 +7,11 @@ Most X11 lockers look the same on every desktop. wmsliver looks like it belongs 
 - **Uses your theme.** The lock panel is drawn as a focused Window Maker window, with your title bar texture, bevels, resize bar, frame border colours and fonts. The background is your current wallpaper. It reads the theme each time it locks, so switching themes just works.
 - **Shows real dockapps.** Show `wmcpuload`, `wmclock` or any other dockapp in a corner of the lock screen. wmsliver runs its own private copies, so the ones in your dock are left alone.
 - **Saves power while locked.** With [power-profiles-daemon](https://gitlab.freedesktop.org/upower/power-profiles-daemon), it switches to `power-saver` on lock and restores your previous profile on unlock.
-- **Stays small.** One C file using Xlib, Xft, Imlib2 and PAM. No toolkit, no daemon, and it locks almost instantly.
+- **Stays small.** A few hundred lines of C using Xlib, Xft, Imlib2 and PAM. No toolkit, no daemon, and it locks almost instantly.
 
 The panel has a profile picture, your user name and a password box. That's all.
+
+It also comes with **wmsliver-logout**, a matching session menu for locking, logging out, suspending, rebooting and shutting down.
 
 ## Build and install
 
@@ -24,7 +26,7 @@ Dependencies:
 
 ```sh
 make
-sudo make install          # /usr/local/bin/wmsliver and /etc/pam.d/wmsliver
+sudo make install          # /usr/local/bin/wmsliver{,-logout} and /etc/pam.d/wmsliver
 ```
 
 Without systemd (Void, Devuan, Slackware, ...), build without the power-saving feature:
@@ -110,6 +112,38 @@ Colours, fonts and textures aren't set here. They come from Window Maker. wmsliv
 | `WorkspaceBack` | background, if no wallpaper has been set with `wmsetbg` |
 
 It supports the usual texture types: `solid`, `[m]{h,v,d}gradient`, and `{t,s,c,f,m}pixmap`. Textures that combine a tiled pixmap with a gradient (`t{h,v,d}gradient`) are drawn as the gradient only.
+
+## Session menu: wmsliver-logout
+
+`wmsliver-logout` is a small companion pop-up with **Lock, Log Out, Suspend, Reboot and Shut Down**. It's drawn as a Window Maker menu from your theme: menu title bar, menu texture and `MenuStyle`, menu fonts and `HighlightColor`. It opens in the bottom-left corner of the monitor with the pointer.
+
+- **Keys:** arrows, Tab or `j`/`k` move the selection and Enter runs it. Each item also has a one-key shortcut, shown on the right: **L**ock, L**o**g Out, **S**uspend, **R**eboot, Shut **D**own. Escape closes the menu.
+- **Mouse:** click an item to run it, or click outside the menu to close it.
+- **Safe default:** Lock is pre-selected, so a stray Enter only locks the screen.
+
+Bind it next to the lock key in `WMRootMenu`:
+
+```
+("Session...", SHORTCUT, "Mod4+Escape", EXEC, wmsliver-logout),
+```
+
+The defaults:
+
+| Item | Command |
+|---|---|
+| Lock | `wmsliver` |
+| Log Out | `pkill -TERM -n -x wmaker` (Window Maker saves its state and exits) |
+| Suspend | locks first, then `systemctl suspend` |
+| Reboot | `systemctl reboot` |
+| Shut Down | `systemctl poweroff` |
+
+To change a command, hide an item, or move the menu, copy [`logout.example`](logout.example) to `~/.config/wmsliver/logout`:
+
+```ini
+position = bottom-right     # default bottom-left; also top-left, top-right, center
+suspend = loginctl suspend
+reboot =                    # empty hides the item
+```
 
 ## How the dockapps work
 
