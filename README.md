@@ -1,172 +1,52 @@
 # wmsliver
 
-A small, fast screen locker for [Window Maker](https://www.windowmaker.org/) that wears your theme.
+Session tools for [Window Maker](https://www.windowmaker.org/) that take their look from your theme:
 
-Most X11 lockers look the same on every desktop. wmsliver looks like it belongs in Window Maker:
+- **`wmsliver`** is a screen locker. The lock panel looks like a focused Window Maker window, over your wallpaper. It can show live dockapps (`wmcpuload`, `wmclock`, …) in a corner, and it switches to power-saver while locked.
+- **`wmsliver-logout`** is a session menu with Lock, Log Out, Suspend, Reboot and Shut Down. It looks like one of your Window Maker menus.
 
-- **Uses your theme.** The lock panel is drawn as a focused Window Maker window, with your title bar texture, bevels, resize bar, frame border colours and fonts. The background is your current wallpaper. It reads the theme each time it locks, so switching themes just works.
-- **Shows real dockapps.** Show `wmcpuload`, `wmclock` or any other dockapp in a corner of the lock screen. wmsliver runs its own private copies, so the ones in your dock are left alone.
-- **Saves power while locked.** With [power-profiles-daemon](https://gitlab.freedesktop.org/upower/power-profiles-daemon), it switches to `power-saver` on lock and restores your previous profile on unlock.
-- **Stays small.** A few hundred lines of C using Xlib, Xft, Imlib2 and PAM. No toolkit, no daemon, and it locks almost instantly.
+Both read your Window Maker theme when they start, so they always match it. They're small C programs using Xlib, Xft, Imlib2 and PAM, with no toolkit and no daemon.
 
-The panel has a profile picture, your user name and a password box. That's all.
+## Install
 
-It also comes with **wmsliver-logout**, a matching session menu for locking, logging out, suspending, rebooting and shutting down.
-
-## Build and install
-
-Dependencies:
-
-| | Arch | Debian / Ubuntu |
-|---|---|---|
-| X11, Xft, Xinerama | `libx11 libxft libxinerama` | `libx11-dev libxft-dev libxinerama-dev` |
-| Imlib2 | `imlib2` | `libimlib2-dev` |
-| PAM | `pam` | `libpam0g-dev` |
-| sd-bus (power saving, optional) | `systemd-libs` | `libsystemd-dev` |
+Needs X11, Xft, Xinerama, Imlib2 and PAM. The power-saver feature also needs sd-bus.
+- Arch: `libx11 libxft libxinerama imlib2 pam systemd-libs`
+- Debian: `libx11-dev libxft-dev libxinerama-dev libimlib2-dev libpam0g-dev libsystemd-dev`
 
 ```sh
-make
-sudo make install          # /usr/local/bin/wmsliver{,-logout} and /etc/pam.d/wmsliver
+make                 # without systemd: make POWER=0
+sudo make install
 ```
 
-Without systemd (Void, Devuan, Slackware, ...), build without the power-saving feature:
+Test the locker with a timer the first time, so a bug can't lock you out: `timeout 30 wmsliver`.
 
-```sh
-make POWER=0
-```
+## Keys
 
-`/etc/pam.d/wmsliver` just includes your `login` auth stack. If it isn't installed, wmsliver uses the `login` service directly.
-
-## Try it safely first
-
-A locker bug can lock you out, so the first time, run it with a timer that kills it:
-
-```sh
-timeout -k 2 30 wmsliver
-```
-
-The screen unlocks after 30 seconds whatever happens. Try your password before the timer runs out. If you ever get stuck, switch to a text console (Ctrl+Alt+F2) and run `pkill wmsliver`.
-
-## Lock with a key
-
-Add an entry with a shortcut to your root menu, `~/GNUstep/Defaults/WMRootMenu`:
+Add shortcuts to `~/GNUstep/Defaults/WMRootMenu`, then restart Window Maker:
 
 ```
 ("Lock Screen", SHORTCUT, "Mod4+L", EXEC, wmsliver),
-```
-
-If the shortcut doesn't work straight away, restart Window Maker so it re-reads the menu. Tap the shortcut rather than holding it: wmsliver waits up to a second for the key to be released before taking the keyboard.
-
-To lock when idle, use [xss-lock](https://bitbucket.org/raymonad/xss-lock) in `~/GNUstep/Library/WindowMaker/autostart`:
-
-```sh
-xset s 600
-xss-lock -- wmsliver &
-```
-
-## Configure
-
-wmsliver works without a config file. To change anything, copy [`config.example`](config.example) to `~/.config/wmsliver/config` (or `/etc/wmsliver.conf` for all users):
-
-```ini
-# picture above your name (default: ~/.face, then ~/.face.icon)
-avatar = ~/Pictures/me.png
-
-# text in the title bar
-title = Screen Locked
-
-# dockapps, left to right, with arguments if needed (up to 8)
-dockapp = wmcpuload
-dockapp = wmclock -12
-
-# bottom-left, bottom-right, top-left or top-right
-dock = bottom-left
-
-# power-saver while locked (needs power-profiles-daemon)
-powersave = yes
-
-# colour of "Wrong password"
-error_color = #e05050
-```
-
-Command line:
-
-```
-wmsliver [-c config] [-a avatar] [-v]
-```
-
-- `-c`: use this config file instead of the default ones.
-- `-a`: use this picture, overriding the config.
-- `-v`: print the version.
-
-Colours, fonts and textures aren't set here. They come from Window Maker. wmsliver reads `/etc/WindowMaker/WindowMaker`, then your `$GNUSTEP_USER_ROOT/Defaults/WindowMaker` (default `~/GNUstep`), and uses:
-
-| Theme key | Used for |
-|---|---|
-| `FTitleBack`, `FTitleColor`, `WindowTitleFont`, `TitleJustify` | title bar |
-| `FrameFocusedBorderColor`, `FrameBorderWidth` | window border, avatar frame |
-| `ResizebarBack` | resize bar |
-| `MenuTextBack`, `MenuTextColor`, `MenuTitleFont`, `MenuTextFont` | panel body, user name |
-| `IconTitleBack`, `FrameSelectedBorderColor`, `HighlightTextColor` | password field |
-| `IconBack` | dock tiles |
-| `WorkspaceBack` | background, if no wallpaper has been set with `wmsetbg` |
-
-It supports the usual texture types: `solid`, `[m]{h,v,d}gradient`, and `{t,s,c,f,m}pixmap`. Textures that combine a tiled pixmap with a gradient (`t{h,v,d}gradient`) are drawn as the gradient only.
-
-## Session menu: wmsliver-logout
-
-`wmsliver-logout` is a small companion pop-up with **Lock, Log Out, Suspend, Reboot and Shut Down**. It's drawn as a Window Maker menu from your theme: menu title bar, menu texture and `MenuStyle`, menu fonts and `HighlightColor`. It opens in the bottom-left corner of the monitor with the pointer.
-
-- **Keys:** arrows, Tab or `j`/`k` move the selection and Enter runs it. Each item also has a one-key shortcut, shown on the right: **L**ock, L**o**g Out, **S**uspend, **R**eboot, Shut **D**own. Escape closes the menu.
-- **Mouse:** click an item to run it, or click outside the menu to close it.
-- **Safe default:** Lock is pre-selected, so a stray Enter only locks the screen.
-
-Bind it next to the lock key in `WMRootMenu`:
-
-```
 ("Session...", SHORTCUT, "Mod4+Escape", EXEC, wmsliver-logout),
 ```
 
-The defaults:
+In the session menu:
+- arrow keys, Tab or `j`/`k` move the selection and Enter runs it;
+- **L**, **O**, **S**, **R** and **D** run an item directly;
+- Escape or a click outside closes it.
 
-| Item | Command |
-|---|---|
-| Lock | `wmsliver` |
-| Log Out | `pkill -TERM -n -x wmaker` (Window Maker saves its state and exits) |
-| Suspend | locks first, then `systemctl suspend` |
-| Reboot | `systemctl reboot` |
-| Shut Down | `systemctl poweroff` |
+Lock is pre-selected. To lock when idle, add `xss-lock -- wmsliver &` to your autostart.
 
-To change a command, hide an item, or move the menu, copy [`logout.example`](logout.example) to `~/.config/wmsliver/logout`:
+## Configure
 
-```ini
-position = bottom-right     # default bottom-left; also top-left, top-right, center
-suspend = loginctl suspend
-reboot =                    # empty hides the item
-```
+Both programs work without a config file.
+- **Locker:** copy [`config.example`](config.example) to `~/.config/wmsliver/config` to set the picture, dockapps and their corner, and power-saver.
+- **Session menu:** copy [`logout.example`](logout.example) to `~/.config/wmsliver/logout` to change commands, hide items or move the menu.
 
-## How the dockapps work
+Colours, fonts and textures come from `~/GNUstep/Defaults/WindowMaker`: title bar, frame, menu and icon settings, and your wallpaper. All the usual texture types are supported.
 
-A dockapp is a small program that draws into a 64×64 "icon window". Window Maker normally takes that window into a dock tile. On lock, wmsliver:
+## Notes
 
-1. starts a new copy of each configured dockapp;
-2. waits until Window Maker has put it in a tile;
-3. moves the icon window into the lock screen;
-4. stops the copy on unlock.
+- **Dockapps:** wmsliver starts private copies of your dockapps and stops them on unlock, so the ones in your dock are never touched.
+- **Security:** it's a small locker in the spirit of [slock](https://tools.suckless.org/slock/). It takes the keyboard and mouse, or refuses to lock if it can't. The password is kept out of swap, wiped after each try, and checked through PAM. For a hardened locker, see [xsecurelock](https://github.com/google/xsecurelock).
 
-wmsliver never touches the copies already in your dock. Moving a live dockapp out of Window Maker's tile and back confuses Window Maker, which then shows it as a normal window. The dockapps get no keyboard or mouse input while locked.
-
-## Security notes
-
-wmsliver works the way [slock](https://tools.suckless.org/slock/) does:
-
-- **Keyboard and mouse:** it takes both over. If it can't within about a second, it exits without locking, rather than showing a lock screen that doesn't protect anything.
-- **Password:** kept in memory that can't be written to swap, and wiped after each attempt. The check goes through PAM.
-- **Staying on top:** if another window appears over it, it raises itself back.
-- **Dockapps:** a dockapp crashing can't take the locker down with it.
-
-It's a small, easily audited locker, not a hardened one. For example, X11 has no protocol that guarantees a locker stays on top the way Wayland's `ext-session-lock` does. If you need stronger isolation (a separate authentication process, protection against a crashed compositor), look at [xsecurelock](https://github.com/google/xsecurelock).
-
-## License
-
-MIT, see [LICENSE](LICENSE).
+MIT licensed.
