@@ -1,14 +1,5 @@
 # wmsliver
 
-A screen locker and a logout menu for [Window Maker](https://www.windowmaker.org/), both dressed in your current theme.
-
-- **`wmsliver`** locks the screen with a little Window Maker-style window over your wallpaper. It can show your dockapps while locked, and it goes easy on the battery until you're back.
-- **`wmsliver-logout`** pops up a menu with Lock, Log Out, Suspend, Reboot and Shut Down.
-
-Switch themes and they follow along. Small C, no toolkit.
-
-## Get it running
-
 ```sh
 make
 sudo make install
