@@ -74,5 +74,3 @@ The background is your current wallpaper when one has been set (with `wmsetbg`).
 Environment variables they respect:
 - `GNUSTEP_USER_ROOT`: where your GNUstep folder lives, if not `~/GNUstep`.
 - `XDG_CONFIG_HOME`: where `wmsliver/` config lives, if not `~/.config`.
-
-MIT licensed. Have fun.
